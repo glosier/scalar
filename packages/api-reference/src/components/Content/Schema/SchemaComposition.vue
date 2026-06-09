@@ -1,8 +1,4 @@
 <script lang="ts" setup>
-import {
-  ScalarListbox,
-  type ScalarListboxOption,
-} from '@scalar/components/listbox'
 import { isDefined } from '@scalar/helpers/array/is-defined'
 import { ScalarIconCaretDown } from '@scalar/icons'
 import type { WorkspaceEventBus } from '@scalar/workspace-store/events'
@@ -25,6 +21,11 @@ import { type CompositionKeyword } from './helpers/schema-composition'
 import { getCycleKey } from './helpers/schema-cycle'
 import { getModelNameFromSchema } from './helpers/schema-name'
 import Schema from './Schema.vue'
+
+type CompositionOption = {
+  id: string
+  label: string
+}
 
 const props = withDefaults(
   defineProps<{
@@ -70,11 +71,11 @@ const composition = computed(() =>
 )
 
 /**
- * Generate listbox options for the composition selector.
+ * Generate tab options for the composition selector.
  * Each option represents a schema in the composition with a human-readable label.
  * Prefers schema title/name over structural type when present.
  */
-const listboxOptions = computed((): ScalarListboxOption[] =>
+const compositionOptions = computed((): CompositionOption[] =>
   composition.value.map((schema, index: number) => {
     const resolved = resolve.schema(schema.original!)
     const label =
@@ -112,17 +113,20 @@ const initialSelectedIndex = computed(() => {
     return 0
   }
 
-  return Math.max(0, Math.min(selectedIndex, listboxOptions.value.length - 1))
+  return Math.max(
+    0,
+    Math.min(selectedIndex, compositionOptions.value.length - 1),
+  )
 })
 
 /**
  * Two-way computed property for the selected option.
- * Handles conversion between the selected index and the listbox option format.
+ * Handles conversion between the selected index and the tab option format.
  */
-const selectedOption = ref<ScalarListboxOption | undefined>()
+const selectedOption = ref<CompositionOption | undefined>()
 
 watch(
-  [listboxOptions, initialSelectedIndex],
+  [compositionOptions, initialSelectedIndex],
   ([options, selectedIndex]) => {
     if (
       !selectedOption.value ||
@@ -144,6 +148,16 @@ const humanizeType = (type: CompositionKeyword): string =>
     .replace(/^./, (str) => str.toUpperCase())
     .toLowerCase()
     .replace(/^(\w)/, (c) => c.toUpperCase())
+
+const selectComposition = (option: CompositionOption) => {
+  selectedOption.value = option
+}
+
+const optionSchema = (option: CompositionOption) =>
+  composition.value[Number(option.id)]?.value
+
+const isSelectedOption = (option: CompositionOption) =>
+  option.id === selectedOption.value?.id
 
 /** Inside the currently selected composition */
 const selectedComposition = computed(
@@ -210,31 +224,45 @@ if (
 
     <template v-else>
       <!-- Composition selector and panel for nested compositions -->
-      <ScalarListbox
-        v-model="selectedOption"
-        :options="listboxOptions"
-        resize>
+      <div
+        class="composition-selector bg-b-1.5 flex w-full flex-wrap items-center gap-1 rounded-t-lg border p-1"
+        role="tablist"
+        :aria-label="humanizeType(props.composition)">
+        <span
+          class="composition-selector-type text-c-2 px-1.5 py-1 text-xs font-medium">
+          {{ humanizeType(props.composition) }}
+        </span>
         <button
-          class="composition-selector bg-b-1.5 hover:bg-b-2 flex w-full cursor-pointer items-center gap-1 rounded-t-lg border px-2.5 py-2.5 pr-3 text-left"
-          type="button">
-          <span class="text-c-2">{{ humanizeType(props.composition) }}</span>
+          v-for="option in compositionOptions"
+          :key="option.id"
+          :aria-selected="isSelectedOption(option)"
+          class="composition-selector-tab hover:bg-b-2 flex cursor-pointer items-center gap-1 rounded px-2 py-1 text-left text-sm"
+          :class="
+            isSelectedOption(option)
+              ? 'bg-b-1 text-c-1 shadow-border'
+              : 'text-c-2'
+          "
+          role="tab"
+          type="button"
+          @click="selectComposition(option)">
           <span
-            class="composition-selector-label text-c-1"
+            class="composition-selector-label"
             :class="{
-              'line-through': selectedComposition?.deprecated,
+              'line-through': optionSchema(option)?.deprecated,
             }">
-            {{ selectedOption?.label || 'Schema' }}
+            {{ option.label || 'Schema' }}
           </span>
           <div
-            v-if="selectedComposition?.deprecated"
+            v-if="optionSchema(option)?.deprecated"
             class="text-red">
             deprecated
           </div>
-          <ScalarIconCaretDown />
         </button>
-      </ScalarListbox>
+      </div>
 
-      <div class="composition-panel">
+      <div
+        class="composition-panel"
+        role="tabpanel">
         <!-- Button to toggle nested schema display -->
         <button
           v-if="!showNestedSchema && level > 2"

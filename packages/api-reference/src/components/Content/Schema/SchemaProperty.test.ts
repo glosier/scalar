@@ -1,4 +1,3 @@
-import { ScalarListbox } from '@scalar/components/listbox'
 import { coerceValue } from '@scalar/workspace-store/schemas/typebox-coerce'
 import { SchemaObjectSchema } from '@scalar/workspace-store/schemas/v3.1/strict/openapi-document'
 import { mount } from '@vue/test-utils'
@@ -572,8 +571,8 @@ describe('SchemaProperty', () => {
         expect(firstLevelSelector.text()).toContain('All of')
 
         // Select the second option
-        const dropdown = wrapper.findComponent(ScalarListbox)
-        await dropdown.vm.$emit('update:modelValue', { id: '1', label: 'One of' })
+        const tab = wrapper.findAll('.composition-selector-tab')[1]
+        await tab?.trigger('click')
         await wrapper.vm.$nextTick()
 
         expect(wrapper.text()).toBe('All ofOne ofAll offoo (1)')

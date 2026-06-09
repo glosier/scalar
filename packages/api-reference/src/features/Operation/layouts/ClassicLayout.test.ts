@@ -1,4 +1,3 @@
-import { ScalarListbox } from '@scalar/components/listbox'
 import { createWorkspaceEventBus } from '@scalar/workspace-store/events'
 import { coerceValue } from '@scalar/workspace-store/schemas/typebox-coerce'
 import type { OperationObject, ServerObject } from '@scalar/workspace-store/schemas/v3.1/strict/openapi-document'
@@ -172,9 +171,8 @@ describe('ClassicLayout', () => {
 
     expect(wrapper.findComponent({ name: 'ScalarCodeBlock' }).exists()).toBe(true)
 
-    const compositionSelector = wrapper.findComponent(ScalarListbox)
-    const listboxOptions = compositionSelector.props('options')
-    await compositionSelector.vm.$emit('update:modelValue', listboxOptions[1])
+    const tab = wrapper.findAll('.composition-selector-tab')[1]
+    await tab?.trigger('click')
     await nextTick()
     await nextTick()
 
@@ -198,9 +196,8 @@ describe('ClassicLayout', () => {
 
     expect(wrapper.findComponent({ name: 'ScalarCodeBlock' }).exists()).toBe(true)
 
-    const compositionSelector = wrapper.findComponent(ScalarListbox)
-    const listboxOptions = compositionSelector.props('options')
-    await compositionSelector.vm.$emit('update:modelValue', listboxOptions[1])
+    const tab = wrapper.findAll('.composition-selector-tab')[1]
+    await tab?.trigger('click')
     await nextTick()
     await nextTick()
 

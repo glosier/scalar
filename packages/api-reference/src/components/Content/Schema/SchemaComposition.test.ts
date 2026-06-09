@@ -129,8 +129,8 @@ describe('SchemaComposition', () => {
         },
       })
 
-      const listbox = wrapper.findComponent({ name: 'ScalarListbox' })
-      await listbox.vm.$emit('update:modelValue', { id: '1', label: 'Schema' })
+      const tab = wrapper.findAll('.composition-selector-tab')[1]
+      await tab?.trigger('click')
       await wrapper.vm.$nextTick()
 
       const panel = wrapper.find('.composition-panel')
@@ -161,8 +161,8 @@ describe('SchemaComposition', () => {
         },
       })
 
-      const listbox = wrapper.findComponent({ name: 'ScalarListbox' })
-      await listbox.vm.$emit('update:modelValue', { id: '2', label: 'Schema' })
+      const tab = wrapper.findAll('.composition-selector-tab')[2]
+      await tab?.trigger('click')
       await wrapper.vm.$nextTick()
 
       const schemaComponent = wrapper.findComponent({ name: 'Schema' })
@@ -335,13 +335,12 @@ describe('SchemaComposition', () => {
       },
     })
 
-    // Check that the listbox options show the correct labels
-    const listbox = wrapper.findComponent({ name: 'ScalarListbox' })
-    const options = listbox.props('options')
+    // Check that the tabs show the correct labels
+    const tabs = wrapper.findAll('.composition-selector-tab')
 
-    expect(options).toHaveLength(2)
-    expect(options[0].label).toBe('string')
-    expect(options[1].label).toBe('Schema')
+    expect(tabs).toHaveLength(2)
+    expect(tabs[0]?.text()).toBe('string')
+    expect(tabs[1]?.text()).toBe('Schema')
 
     // Check that the first schema (string) is rendered correctly
     const schemaComponent = wrapper.findComponent({ name: 'Schema' })
@@ -388,8 +387,8 @@ describe('SchemaComposition', () => {
     })
 
     // Select the second option (merged allOf schema)
-    const listbox = wrapper.findComponent({ name: 'ScalarListbox' })
-    await listbox.vm.$emit('update:modelValue', { id: '1', label: 'Schema' })
+    const tab = wrapper.findAll('.composition-selector-tab')[1]
+    await tab?.trigger('click')
     await wrapper.vm.$nextTick()
 
     // Check that the merged schema is rendered with both properties
